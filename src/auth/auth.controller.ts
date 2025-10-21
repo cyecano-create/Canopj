@@ -1,0 +1,34 @@
+// added a gender in register and login because if dont the code with be error because the code is looking for the gender
+
+
+
+import { Controller, Post, Body, UseGuards,Request, Get } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { UsersService } from '../user/users.controller';
+
+@Controller('auth')
+export class AuthController {
+    constructor(private authService: AuthService, private usersService: UsersService) {}
+
+    @Post('register')
+    async register(@Body() body: { username: string; password: string; gender: string}){
+        return this.usersService.createUser(body.username, body.password, body.gender);
+    }
+
+    @Post('login')
+    async login(@Body() body: { username: string; password: string}) {
+        const user = await this.authService.validateUser(body.username, body.password);
+        if (!user) return { error: 'invalid credential' };
+        return this.authService.login(user);
+    }
+
+    @Post('logout')
+    async logout(@Body() body: { userId: number }) {
+        return this.authService.logout(body.userId);
+    }
+
+    @Post('refresh')
+    async refresh(@Body() Body: { refreshToken: string }) {
+        return this.authService.refreshToken(Body.refreshToken);
+    }
+}
